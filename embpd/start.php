@@ -141,4 +141,3 @@ $pdo->prepare("INSERT INTO embpd_chats(session_id, role, content) VALUES (?,?,?)
 
 header("Location: " . APP_BASE . "/");
 exit;
-
