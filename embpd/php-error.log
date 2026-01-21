@@ -1,0 +1,43 @@
+[17-Jan-2026 13:23:14 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'wp_addul_db1.chats' doesn't exist in /usr/www/users/adduli/embpd/chat.php:32
+Stack trace:
+#0 /usr/www/users/adduli/embpd/chat.php(32): PDO->prepare()
+#1 {main}
+  thrown in /usr/www/users/adduli/embpd/chat.php on line 32
+[17-Jan-2026 13:25:44 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'wp_addul_db1.intent_rules' doesn't exist in /usr/www/users/adduli/embpd/utils/intent.php:31
+Stack trace:
+#0 /usr/www/users/adduli/embpd/utils/intent.php(31): PDO->prepare()
+#1 /usr/www/users/adduli/embpd/utils/intent.php(89): load_all_rules()
+#2 /usr/www/users/adduli/embpd/chat.php(38): apply_rules()
+#3 {main}
+  thrown in /usr/www/users/adduli/embpd/utils/intent.php on line 31
+[17-Jan-2026 13:27:16 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'wp_addul_db1.intent_suggestions' doesn't exist in /usr/www/users/adduli/embpd/utils/intent.php:143
+Stack trace:
+#0 /usr/www/users/adduli/embpd/utils/intent.php(143): PDO->prepare()
+#1 /usr/www/users/adduli/embpd/chat.php(41): save_intent_suggestion()
+#2 {main}
+  thrown in /usr/www/users/adduli/embpd/utils/intent.php on line 143
+[17-Jan-2026 13:59:22 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined function ensure_allowed_norm_act() in /usr/www/users/adduli/embpd/chat.php:15
+Stack trace:
+#0 {main}
+  thrown in /usr/www/users/adduli/embpd/chat.php on line 15
+[17-Jan-2026 14:11:24 Europe/Berlin] PHP Warning:  Undefined variable $messages in /usr/www/users/adduli/embpd/chat.php on line 15
+[17-Jan-2026 14:11:24 Europe/Berlin] PHP Warning:  Undefined variable $assistant in /usr/www/users/adduli/embpd/chat.php on line 15
+[17-Jan-2026 14:11:24 Europe/Berlin] PHP Warning:  Undefined variable $selected in /usr/www/users/adduli/embpd/chat.php on line 15
+[17-Jan-2026 14:11:24 Europe/Berlin] PHP Fatal error:  Uncaught TypeError: ensure_allowed_norm_act(): Argument #1 ($messages) must be of type array, null given, called in /usr/www/users/adduli/embpd/chat.php on line 15 and defined in /usr/www/users/adduli/embpd/utils/norm_validate.php:102
+Stack trace:
+#0 /usr/www/users/adduli/embpd/chat.php(15): ensure_allowed_norm_act()
+#1 {main}
+  thrown in /usr/www/users/adduli/embpd/utils/norm_validate.php on line 102
+[17-Jan-2026 14:19:05 Europe/Berlin] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in /usr/www/users/adduli/embpd/utils/openai.php on line 70
+[17-Jan-2026 14:19:05 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at /usr/www/users/adduli/embpd/utils/openai.php:70) in /usr/www/users/adduli/embpd/chat.php on line 87
+[17-Jan-2026 14:20:56 Europe/Berlin] PHP Deprecated:  Function curl_close() is deprecated since 8.5, as it has no effect since PHP 8.0 in /usr/www/users/adduli/embpd/utils/openai.php on line 70
+[17-Jan-2026 14:20:56 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at /usr/www/users/adduli/embpd/utils/openai.php:70) in /usr/www/users/adduli/embpd/chat.php on line 103
+[20-Jan-2026 08:32:33 Europe/Berlin] PHP Deprecated:  Function finfo_close() is deprecated since 8.5, as finfo objects are freed automatically in /usr/www/users/adduli/embpd/rakstisanai.php on line 224
+[20-Jan-2026 08:32:33 Europe/Berlin] PHP Warning:  http_response_code(): Cannot set response code - headers already sent (output started at /usr/www/users/adduli/embpd/rakstisanai.php:224) in /usr/www/users/adduli/embpd/rakstisanai.php on line 143
+[20-Jan-2026 08:32:33 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at /usr/www/users/adduli/embpd/rakstisanai.php:224) in /usr/www/users/adduli/embpd/rakstisanai.php on line 144
+[20-Jan-2026 08:35:05 Europe/Berlin] PHP Deprecated:  Function finfo_close() is deprecated since 8.5, as finfo objects are freed automatically in /usr/www/users/adduli/embpd/rakstisanai.php on line 224
+[20-Jan-2026 08:35:05 Europe/Berlin] PHP Warning:  http_response_code(): Cannot set response code - headers already sent (output started at /usr/www/users/adduli/embpd/rakstisanai.php:224) in /usr/www/users/adduli/embpd/rakstisanai.php on line 143
+[20-Jan-2026 08:35:05 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at /usr/www/users/adduli/embpd/rakstisanai.php:224) in /usr/www/users/adduli/embpd/rakstisanai.php on line 144
+[20-Jan-2026 08:35:38 Europe/Berlin] PHP Deprecated:  Function finfo_close() is deprecated since 8.5, as finfo objects are freed automatically in /usr/www/users/adduli/embpd/rakstisanai.php on line 224
+[20-Jan-2026 08:35:38 Europe/Berlin] PHP Warning:  http_response_code(): Cannot set response code - headers already sent (output started at /usr/www/users/adduli/embpd/rakstisanai.php:224) in /usr/www/users/adduli/embpd/rakstisanai.php on line 143
+[20-Jan-2026 08:35:38 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at /usr/www/users/adduli/embpd/rakstisanai.php:224) in /usr/www/users/adduli/embpd/rakstisanai.php on line 144
