@@ -1,0 +1,36 @@
+cat > .gitignore <<'EOF'
+# secrets
+.env.php
+.env
+*.local.php
+
+# logs
+*.log
+php-error.log
+
+# data – allow normative texts
+data/*
+!data/*.txt
+!data/*.md
+
+# generated / cache inside data (if any)
+data/cache/
+data/tmp/
+data/*.zip
+data/*.json
+
+# runtime/data
+uploads/
+utils/db.php
+xX
+# archives/backups
+*.zip
+
+
+# deps (ja kādreiz parādās)
+vendor/
+node_modules/
+
+# OS
+.DS_Store
+EOF
