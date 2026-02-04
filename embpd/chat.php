@@ -14,44 +14,38 @@ require_once __DIR__ . '/utils/openai.php';
 require_once __DIR__ . '/utils/citations.php';
 require_once __DIR__ . '/utils/norm_validate.php';
 
-if (!function_exists('normalize_lv_text')) {
-  function normalize_lv_text(string $text): string {
-    $text = mb_strtolower($text);
-    return strtr($text, [
-      'ā' => 'a', 'č' => 'c', 'ē' => 'e', 'ģ' => 'g', 'ī' => 'i', 'ķ' => 'k',
-      'ļ' => 'l', 'ņ' => 'n', 'š' => 's', 'ū' => 'u', 'ž' => 'z',
-    ]);
+$normalizeLvText = static function (string $text): string {
+  $text = mb_strtolower($text);
+  return strtr($text, [
+    'ā' => 'a', 'č' => 'c', 'ē' => 'e', 'ģ' => 'g', 'ī' => 'i', 'ķ' => 'k',
+    'ļ' => 'l', 'ņ' => 'n', 'š' => 's', 'ū' => 'u', 'ž' => 'z',
+  ]);
+};
+
+$extractAreaM2 = static function (string $text): ?float {
+  if ($text === '') return null;
+  $pattern = '/(\d+(?:[.,]\d+)?)\s*(?:m2|m²|m\^2|kv\.?\s*m|kvadratmetri)/u';
+  if (!preg_match_all($pattern, $text, $matches)) return null;
+
+  $areas = [];
+  foreach ($matches[1] as $raw) {
+    $value = (float)str_replace(',', '.', $raw);
+    if ($value > 0) $areas[] = $value;
   }
-}
+  if (!$areas) return null;
+  return min($areas);
+};
 
-if (!function_exists('extract_area_m2')) {
-  function extract_area_m2(string $text): ?float {
-    if ($text === '') return null;
-    $pattern = '/(\d+(?:[.,]\d+)?)\s*(?:m2|m²|m\^2|kv\.?\s*m|kvadratmetri)/u';
-    if (!preg_match_all($pattern, $text, $matches)) return null;
+$isMazekaLidz25 = static function (string $prompt) use ($normalizeLvText, $extractAreaM2): bool {
+  $normalized = $normalizeLvText($prompt);
+  $mentionsMazeka = str_contains($normalized, 'mazeka') || str_contains($normalized, 'maza eka');
+  if (!$mentionsMazeka) return false;
 
-    $areas = [];
-    foreach ($matches[1] as $raw) {
-      $value = (float)str_replace(',', '.', $raw);
-      if ($value > 0) $areas[] = $value;
-    }
-    if (!$areas) return null;
-    return min($areas);
-  }
-}
+  $area = $extractAreaM2($prompt);
+  if ($area === null) return false;
 
-if (!function_exists('is_mazeka_lidz_25')) {
-  function is_mazeka_lidz_25(string $prompt): bool {
-    $normalized = normalize_lv_text($prompt);
-    $mentionsMazeka = str_contains($normalized, 'mazeka') || str_contains($normalized, 'maza eka');
-    if (!$mentionsMazeka) return false;
-
-    $area = extract_area_m2($prompt);
-    if ($area === null) return false;
-
-    return $area <= 25.0;
-  }
-}
+  return $area <= 25.0;
+};
 
 $pdo = db();
 
@@ -106,7 +100,7 @@ foreach (($rulePack['actions'] ?? []) as $a) {
 $extraRules .= "- Drīkst apgalvot TIKAI to, kas ir pievienotajos TXT normatīvos. Ja termins/nav prasība nav TXT, to NEDRĪKST minēt.\n";
 $extraRules .= "- Ja nevar atrast konkrētu atsauci TXT, [NORMATĪVAIS_PAMATOJUMS] blokā raksti: Atsauce: nav noteikta.\n";
 $extraRules .= "- Aizliegts minēt 'apliecinājuma karte', ja tā nav tieši atrodama un citējama no pievienotajiem TXT.\n";
-if (is_mazeka_lidz_25($prompt)) {
+if ($isMazekaLidz25($prompt)) {
   $extraRules .= "- Ja tekstā ir minēta mazēka līdz 25 m2, pārbaudi TXT izņēmumu šādai mazēkai un, ja noteikts, skaidri norādi, ka būvprojekts minimālā sastāvā un būvatļauja nav nepieciešami.\n";
 }
 
@@ -125,7 +119,7 @@ $normContext = normalize_prim_markers($normContext);
 $contextFacts = "LIETOTĀJA NORĀDĪTIE FAKTI:\n";
 $contextFacts .= "- Būves tips: " . ($buvesTips === 'eka' ? "ēka" : ($buvesTips === 'inzenierbuve' ? "inženierbūve" : "nav zināms")) . "\n";
 $contextFacts .= "- Būves grupa: " . ($buvesGrupa !== 'nezinu' ? ($buvesGrupa . ". grupa") : "nav zināms") . "\n";
-$areaM2 = extract_area_m2($prompt);
+$areaM2 = $extractAreaM2($prompt);
 if ($areaM2 !== null) {
   $contextFacts .= "- Būves platība (no teksta): " . rtrim(rtrim((string)$areaM2, '0'), '.') . " m2\n";
 }
