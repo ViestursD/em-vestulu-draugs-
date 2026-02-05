@@ -48,12 +48,6 @@ function normalize_buves_tips_for_decision(string $tips): string {
   return $t;
 }
 
-function detect_area_m2(string $text): ?float {
-  // Atrod: "24 m2", "24 m²", "līdz 25 m2", "nepārsniedz 25 m²"
-  if (!preg_match('/(\d+(?:[.,]\d+)?)\s*(m2|m²)\b/iu', $text, $m)) return null;
-  return (float) str_replace(',', '.', $m[1]);
-}
-
 /**
  * ✅ STRICT lēmums: meklē tikai ar precīzu kulturas_piemineklis (bez '*')
  * - ja nav atrasts, atgriež null
@@ -256,7 +250,6 @@ $pinned = '';
 $decision = null;     // ja kult != '*'
 $decisionNo = null;   // ja kult == '*'
 $decisionYes = null;  // ja kult == '*'
-$decisionVariants25 = []; // <=25 m2 gadījumam
 
 /** jauns thread: ja ieceres tēma -> izveido pinned + atrod decision(s) */
 if ($isNew && $topic === 'ieceres_dokumentacija') {
@@ -282,29 +275,7 @@ if ($isNew && $topic === 'ieceres_dokumentacija') {
                  ON DUPLICATE KEY UPDATE title=VALUES(title), topic=VALUES(topic), pinned_context=VALUES(pinned_context), updated_at=CURRENT_TIMESTAMP")
       ->execute([$session, 'Čats', $topic, $pinned]);
 
-  // ===== <=25 m2 override: rādām 3 variantus ar citātiem =====
-  $area = detect_area_m2($prompt);
-  if ($area !== null && $area <= 25) {
-    $decisionVariants25 = pick_decision_variants_le_25(
-      $pdo,
-      $buvesTipsN,
-      (string)$buvesGrupa,
-      $objekts ?: '*'
-    );
-    $debugAdd("<=25m2 atrasts — 3 varianti no DB", [
-      'area' => $area,
-      'count' => count($decisionVariants25),
-      'variant_keys' => array_map(fn($r) => $r['variant_key'] ?? null, $decisionVariants25),
-    ]);
-
-    // ✅ šajā režīmā NEMEKLĒJAM 1 "labāko" (ne no/yes, ne single)
-    $decision = null;
-    $decisionNo = null;
-    $decisionYes = null;
-  } else {
-    // (šeit paliek tavs esošais kult/no/yes lēmuma kods – neko nemainām)
-
-    if ($kult === '*') {
+  if ($kult === '*') {
     // ✅ vispirms STRICT (precīzi no/yes), tikai tad fallback
     $decisionNoStrict  = pick_decision_rule_strict($pdo, $buvesTipsN, (string)$buvesGrupa, $objekts ?: '*', $darbibaN ?: '*', 'no');
     $decisionYesStrict = pick_decision_rule_strict($pdo, $buvesTipsN, (string)$buvesGrupa, $objekts ?: '*', $darbibaN ?: '*', 'yes');
@@ -362,7 +333,8 @@ if ($isNew && $topic === 'ieceres_dokumentacija') {
       $selected = array_values(array_unique($selected));
       $debugAdd("Pievienots DB noteiktais normatīvais fails", $nf);
     }
-  }  } // beigas no else bloka}
+  }
+}
 
 /** turpinājumā paņemam pinned + topic no DB */
 if (!$isNew) {
@@ -470,15 +442,6 @@ function build_citation_block_from_decision(array $decision): array {
 $citeA = null;
 $citeB = null;
 $citeSingle = null;
-$citeVariants25 = [];
-
-if (!empty($decisionVariants25)) {
-  foreach ($decisionVariants25 as $r) {
-    $vk = (string)($r['variant_key'] ?? '');
-    $citeVariants25[$vk] = build_citation_block_from_decision($r);
-  }
-  $debugAdd("Citāti (<=25) sagatavoti", array_keys($citeVariants25));
-}
 
 if ($kult === '*' && $decisionNo && $decisionYes) {
   $citeA = build_citation_block_from_decision($decisionNo);   // A = no
@@ -501,42 +464,7 @@ if ($pinned !== '') {
   $contextBlock .= "PINNED KONTEKSTS:\n" . $pinned . "\n";
 }
 
-if (!empty($decisionVariants25)) {
-  $contextBlock .= "BIS LĒMUMS (no DB) — 3 VARIANTI (≤ 25 m²):\n\n";
-
-  $labels = [
-    '<=25_city' => '1) Ja būve ir PILSĒTĀ',
-    '<=25_outside_city' => '2) Ja būve ir ĀRPUS PILSĒTAS',
-    '<=25_heritage' => '3) Ja būve ir KULTŪRAS PIEMINEKĻA teritorijā',
-  ];
-
-  foreach ($decisionVariants25 as $r) {
-    $vk = (string)($r['variant_key'] ?? '');
-    $title = $labels[$vk] ?? ("Variants: " . $vk);
-
-    $contextBlock .= $title . ":\n";
-    $contextBlock .= "- Dokuments: " . (string)($r['doc_type'] ?? '') . "\n";
-    $contextBlock .= "- Normatīvais fails: " . (string)($r['normative_file'] ?? '') . "\n";
-    $contextBlock .= "- Atsauce: " . (string)($r['atsauce'] ?? '') . "\n";
-    $contextBlock .= "- Note: " . (string)($r['note'] ?? '') . "\n";
-
-    $c = $citeVariants25[$vk] ?? null;
-    if (is_array($c)) {
-      $tag = strtoupper(str_replace(['<=','_'], ['LE','_'], $vk)); // piemēram LE25_CITY
-      $contextBlock .= "[CITĀTS_$tag]\n";
-      $contextBlock .= "Normatīvais akts: " . ($c['act_title'] ?: $c['file']) . "\n";
-      if (($c['act_date'] ?? '') !== '') $contextBlock .= "Izdošanas datums: " . $c['act_date'] . "\n";
-      $contextBlock .= "Atsauce: " . $c['atsauce'] . "\n";
-      $contextBlock .= "Citāts (100% pilns punkts):\n" . ($c['quote'] !== '' ? $c['quote'] : "Citāts nav atrasts TXT") . "\n";
-      $contextBlock .= "[/CITĀTS_$tag]\n";
-    }
-
-    $contextBlock .= "\n";
-  }
-
-  $contextBlock .= "OBLIGĀTI: atbildē jāsniedz visi 3 varianti (pilsēta / ārpus pilsētas / kultūras piemineklis), jo atrašanās vieta/statuss nav precizēts.\n\n";
-
-} elseif ($kult === '*' && $decisionNo && $decisionYes) {
+if ($kult === '*' && $decisionNo && $decisionYes) {
   $contextBlock .= "BIS LĒMUMS (no DB) — DIVI SCENĀRIJI (kult='*'):\n\n";
 
   // A) kult=no
@@ -649,3 +577,4 @@ if ($DEBUG_UI) {
 
 header("Location: " . APP_BASE . "/chat.php?session=" . urlencode($session));
 exit;
+
