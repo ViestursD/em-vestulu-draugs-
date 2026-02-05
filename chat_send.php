@@ -1,11 +1,31 @@
 <?php
 declare(strict_types=1);
 
+// ✅ AGRESĪVI ERROR DISPLAY IESTATĪJUMI
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
+error_reporting(E_ALL | E_STRICT);
 ini_set('log_errors', '1');
 ini_set('error_log', __DIR__ . '/php-error.log');
+header('Content-Type: text/html; charset=utf-8');
+
+// ✅ Piekļūšanas kļūdu apstrāde
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+  echo "<div style='background:#fff3cd; border:1px solid #ffc107; padding:10px; margin:10px; font-family:monospace;'>";
+  echo "<strong>⚠️ PHP ERROR ($errno):</strong> $errstr<br>";
+  echo "<small>File: $errfile, Line: $errline</small>";
+  echo "</div>";
+  return false;
+});
+
+set_exception_handler(function($e) {
+  echo "<div style='background:#f8d7da; border:1px solid #f5c6cb; padding:10px; margin:10px; font-family:monospace; color:#721c24;'>";
+  echo "<strong>🔴 EXCEPTION:</strong> " . htmlspecialchars($e->getMessage()) . "<br>";
+  echo "<small>File: " . htmlspecialchars($e->getFile()) . ", Line: " . $e->getLine() . "</small><br>";
+  echo "<pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
+  echo "</div>";
+  exit(1);
+});
 
 mb_internal_encoding('UTF-8');
 
@@ -21,7 +41,14 @@ require_once __DIR__ . '/utils/norm_validate.php';
 require_once __DIR__ . '/utils/buves_grupa.php';
 require_once __DIR__ . '/utils/decision.php';
 
-$pdo = db();
+try {
+  $pdo = db();
+} catch (Exception $e) {
+  echo "<div style='background:#f8d7da; border:1px solid #f5c6cb; padding:10px; margin:10px; font-family:monospace; color:#721c24;'>";
+  echo "<strong>🔴 DB CONNECTION ERROR:</strong> " . htmlspecialchars($e->getMessage()) . "</div>";
+  exit(1);
+}
+
 
 /** =========================
  * DEBUG (UI žurnāls)
@@ -367,7 +394,9 @@ if ($isNew && $topic === 'ieceres_dokumentacija') {
       $selected = array_values(array_unique($selected));
       $debugAdd("Pievienots DB noteiktais normatīvais fails", $nf);
     }
-  }  } // beigas no else bloka}
+  }
+}
+}
 
 /** turpinājumā paņemam pinned + topic no DB */
 if (!$isNew) {
