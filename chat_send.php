@@ -225,9 +225,9 @@ $kult = (string)($_POST['kulturas_piemineklis'] ?? '*');
 $objekts = (string)($_POST['objekts'] ?? '');
 $darbiba = (string)($_POST['darbiba'] ?? '');
 
-// ✅ Konvertē objekts pamatojoties uz area (mazeka → mazeka_ar_pilsetas, ja ≤25 m²)
+// ✅ Konvertē objekts pamatojoties uz kultūras pieminekļa statusu (mazeka → mazeka_ar_pilsetas, ja nav kultūras piem.)
 $objektsOriginal = $objekts;
-$objekts = determine_objekts_variant($objekts, $prompt, $kult);
+$objekts = determine_objekts_variant($objekts, $kult);
 
 $debugAdd("POST saņemts", [
   'isNew' => $isNew,

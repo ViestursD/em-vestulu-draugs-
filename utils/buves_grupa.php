@@ -125,11 +125,8 @@ function determine_buves_grupa_from_rules(string $prompt): string {
  * - mazeka + kulturas_piemineklis='yes' → 'mazeka' 
  *   (kultūras piemineklis → citīgi dokumenti nepieciešami)
  * - citi objekti → nemainīts
- * 
- * Piezīme: area meklēšana no prompt ir sekundāra (jo prompt bieži ir tukšs).
- * Primārā loģika: ja objekts=mazeka un nav kultūras pieminekļa → 'mazeka_ar_pilsetas'
  */
-function determine_objekts_variant(string $objekts, string $prompt, string $kulturasPiemineklis): string {
+function determine_objekts_variant(string $objekts, string $kulturasPiemineklis): string {
   // Tikai mazeka gadījumā veicam konversiju
   if ($objekts !== 'mazeka') {
     return $objekts;
