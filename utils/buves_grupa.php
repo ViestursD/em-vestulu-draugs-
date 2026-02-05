@@ -117,14 +117,17 @@ function determine_buves_grupa_from_rules(string $prompt): string {
 }
 
 /**
- * ✅ Konvertē objekts vērtību pamatojoties uz area (ja ≤25 m²)
+ * ✅ Konvertē objekts vērtību pamatojoties uz kultūras pieminekļa statusu
  * 
- * Piemērs:
- *   determine_objekts_variant('mazeka', 'maču ēka 20 m2', 'no')
- *   → 'mazeka_ar_pilsetas' (jo area ≤ 25 un nav kultūras pieminekļa)
- *   
- *   determine_objekts_variant('mazeka', 'maču ēka 20 m2', 'yes')
- *   → 'mazeka' (jo tā ir kultūras piemineklis)
+ * LOĢIKA:
+ * - mazeka + kulturas_piemineklis='no' (vai '*') → 'mazeka_ar_pilsetas' 
+ *   (tie ir dokumentu nav nepieciešami, jo area ir līdz 25 m²)
+ * - mazeka + kulturas_piemineklis='yes' → 'mazeka' 
+ *   (kultūras piemineklis → citīgi dokumenti nepieciešami)
+ * - citi objekti → nemainīts
+ * 
+ * Piezīme: area meklēšana no prompt ir sekundāra (jo prompt bieži ir tukšs).
+ * Primārā loģika: ja objekts=mazeka un nav kultūras pieminekļa → 'mazeka_ar_pilsetas'
  */
 function determine_objekts_variant(string $objekts, string $prompt, string $kulturasPiemineklis): string {
   // Tikai mazeka gadījumā veicam konversiju
@@ -132,15 +135,12 @@ function determine_objekts_variant(string $objekts, string $prompt, string $kult
     return $objekts;
   }
 
-  // Ekstrahē area no prompt
-  $area = extract_area_from_prompt($prompt);
-  
-  // Ja area ≤ 25 m² un NAV kultūras piemineklis → 'mazeka_ar_pilsetas'
-  if ($area !== null && $area <= 25 && $kulturasPiemineklis !== 'yes') {
+  // ✅ PRIMĀRĀ LOĢIKA: ja NAV kultūras piemineklis → 'mazeka_ar_pilsetas' (dokumentu nav nepieciešami)
+  if ($kulturasPiemineklis !== 'yes') {
     return 'mazeka_ar_pilsetas';
   }
 
-  // Ja kultūras piemineklis → pamet standarta 'mazeka'
+  // Ja kultūras piemineklis ('yes') → pamet standarta 'mazeka' (paskaidrojuma raksts nepieciešams)
   return $objekts;
 }
 
