@@ -116,3 +116,58 @@ function determine_buves_grupa_from_rules(string $prompt): string {
 
 }
 
+/**
+ * ✅ Konvertē objekts vērtību pamatojoties uz area (ja ≤25 m²)
+ * 
+ * Piemērs:
+ *   determine_objekts_variant('mazeka', 'maču ēka 20 m2', 'no')
+ *   → 'mazeka_ar_pilsetas' (jo area ≤ 25 un nav kultūras pieminekļa)
+ *   
+ *   determine_objekts_variant('mazeka', 'maču ēka 20 m2', 'yes')
+ *   → 'mazeka' (jo tā ir kultūras piemineklis)
+ */
+function determine_objekts_variant(string $objekts, string $prompt, string $kulturasPiemineklis): string {
+  // Tikai mazeka gadījumā veicam konversiju
+  if ($objekts !== 'mazeka') {
+    return $objekts;
+  }
+
+  // Ekstrahē area no prompt
+  $area = extract_area_from_prompt($prompt);
+  
+  // Ja area ≤ 25 m² un NAV kultūras piemineklis → 'mazeka_ar_pilsetas'
+  if ($area !== null && $area <= 25 && $kulturasPiemineklis !== 'yes') {
+    return 'mazeka_ar_pilsetas';
+  }
+
+  // Ja kultūras piemineklis → pamet standarta 'mazeka'
+  return $objekts;
+}
+
+/**
+ * ✅ Ekstrahē numeric area (m2) no prompt teksta
+ * Meklē "XX m2", "XX m²", vai arī vārdiskus skaitļus
+ * 
+ * Atgriež:
+ *   - integer, ja atrasts
+ *   - null, ja nav atrasts
+ */
+function extract_area_from_prompt(string $prompt): ?int {
+  // Numeric regex: "20 m2", "20m2", "20 m²"
+  if (preg_match('/(\d+)\s*m[2²]/i', $prompt, $matches)) {
+    return (int)$matches[1];
+  }
+
+  // Vārdiskā forma: "desmit m2", "divdesmit m2", utt.
+  // Meklējam: [vārds] + whitespace + m2/m²
+  if (preg_match('/(\b[a-zāčēģķļņšžū]+)\s+m[2²]/i', $prompt, $matches)) {
+    $word = strtolower($matches[1]);
+    $num = convert_words_to_number($word);
+    if ($num !== null) {
+      return $num;
+    }
+  }
+
+  return null;
+}
+

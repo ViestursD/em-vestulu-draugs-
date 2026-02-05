@@ -225,6 +225,10 @@ $kult = (string)($_POST['kulturas_piemineklis'] ?? '*');
 $objekts = (string)($_POST['objekts'] ?? '');
 $darbiba = (string)($_POST['darbiba'] ?? '');
 
+// ✅ Konvertē objekts pamatojoties uz area (mazeka → mazeka_ar_pilsetas, ja ≤25 m²)
+$objektsOriginal = $objekts;
+$objekts = determine_objekts_variant($objekts, $prompt, $kult);
+
 $debugAdd("POST saņemts", [
   'isNew' => $isNew,
   'session' => $session,
@@ -234,7 +238,8 @@ $debugAdd("POST saņemts", [
   'buvesTips' => $buvesTips,
   'buvesGrupa' => $buvesGrupa,
   'kult' => $kult,
-  'objekts' => $objekts,
+  'objekts_original' => $objektsOriginal,
+  'objekts_converted' => $objekts,
   'darbiba' => $darbiba,
   'prompt' => $prompt,
 ]);
