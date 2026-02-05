@@ -1,0 +1,25 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Enabled",
+            "previewLimit": 50,
+            "server": "127.0.0.1",
+            "port": 3306,
+            "sshOptions": {
+                "port": 22,
+                "host": "65.21.253.55",
+                "username": "dev",
+                "password": "o2xe47828682vct2r7"
+            },
+            "driver": "MariaDB",
+            "name": "embpd vestule",
+            "database": "wp_addul_db1",
+            "username": "wp_addul_1",
+            "password": "Tcac277Vd1izqpuA"
+        }
+    ]
+}
